@@ -1,0 +1,8 @@
+dataset/train/110773306_p3.png
+__pycache__/
+dataset/
+detectron2/
+output/
+venv/
+model/
+input/
