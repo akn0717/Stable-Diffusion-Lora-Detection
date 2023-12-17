@@ -1,4 +1,5 @@
 import os
+from configs import *
 
 from detectron2 import model_zoo
 from detectron2.config import get_cfg
@@ -12,32 +13,27 @@ from detectron2.data.datasets import register_coco_instances, load_coco_json
 setup_logger()
 
 
-BASE_DIR = "."
-OUTPUT_DIR = "{}/output".format(BASE_DIR)
-PRETRAINED_MODEL_URL = "COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml"
-
-
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 register_coco_instances(
-    "segmentation_train",
+    "train",
     {},
-    "dataset/project_combined/annotations/instances_Train.json",
-    "dataset/project_combined/images",
+    TRAIN_COCO_JSON_PATH,
+    TRAIN_IMAGE_PATH,
 )
 load_coco_json(
-    "dataset/project_combined/annotations/instances_Train.json",
-    "dataset/project_combined/images",
-    "segmentation_train",
+    TRAIN_COCO_JSON_PATH,
+    TRAIN_IMAGE_PATH,
+    "train",
 )
 
-classes = MetadataCatalog.get("segmentation_train").thing_classes
+classes = MetadataCatalog.get("train").thing_classes
 
 
 cfg = get_cfg()
 cfg.OUTPUT_DIR = "{}/model/".format(BASE_DIR)
 
 cfg.merge_from_file(model_zoo.get_config_file(PRETRAINED_MODEL_URL))
-cfg.DATASETS.TRAIN = ("segmentation_train",)
+cfg.DATASETS.TRAIN = ("train",)
 cfg.DATASETS.TEST = ()
 
 cfg.DATALOADER.NUM_WORKERS = 0
