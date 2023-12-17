@@ -2,6 +2,7 @@ from tqdm import tqdm
 import cv2
 import os
 import shutil
+from configs import *
 
 from detectron2 import model_zoo
 from detectron2.config import get_cfg
@@ -22,16 +23,12 @@ cfg = get_cfg()
 cfg.OUTPUT_DIR = "model/"
 
 
-cfg.merge_from_file(
-    model_zoo.get_config_file("COCO-Detection/faster_rcnn_R_101_FPN_3x.yaml")
-)
-cfg.DATASETS.TRAIN = ("data_detection_train",)
+cfg.merge_from_file(model_zoo.get_config_file(PRETRAINED_MODEL_URL))
+cfg.DATASETS.TRAIN = ("train",)
 
 
 cfg.DATALOADER.NUM_WORKERS = 2
-cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(
-    "COCO-Detection/faster_rcnn_R_101_FPN_3x.yaml"
-)
+
 cfg.SOLVER.IMS_PER_BATCH = 2
 cfg.SOLVER.BASE_LR = 0.00025
 cfg.SOLVER.MAX_ITER = 10000
@@ -41,7 +38,7 @@ cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512
 
 
 cfg.MODEL.WEIGHTS = os.path.join(
-    cfg.OUTPUT_DIR, "model_final.pth"
+    cfg.OUTPUT_DIR, "lora_detection_final.pth"
 )  # path to the model we just trained
 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.6  # set a custom testing threshold
 predictor = DefaultPredictor(cfg)
@@ -50,11 +47,11 @@ os.makedirs("output", exist_ok=True)
 os.makedirs("output/original", exist_ok=True)
 
 load_coco_json(
-    "dataset/job_14-2023_11_18_12_13_26-coco 1.0/annotations/instances_default.json",
-    "dataset/job_14-2023_11_18_12_13_26-coco 1.0/images",
-    "segmentation_train",
+    TRAIN_COCO_JSON_PATH,
+    TRAIN_IMAGE_PATH,
+    "train",
 )
-classes = MetadataCatalog.get("segmentation_train").thing_classes
+classes = MetadataCatalog.get("train").thing_classes
 
 for c in classes:
     os.makedirs("output/" + c, exist_ok=True)
